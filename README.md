@@ -6,6 +6,33 @@
 [![PHP](https://img.shields.io/badge/php-%5E8.3-777bb4.svg)](https://www.php.net)
 [![Laravel](https://img.shields.io/badge/laravel-12%7C13-ff2d20.svg)](https://laravel.com)
 
+<!-- template:start -->
+An opinionated starting point for a Laravel package: **Pest**, **Larastan level 9**, **Rector**,
+**Laravel Pint**, Orchestra Testbench with a workbench app, a single GitHub Actions matrix, and
+AI-first documentation (`AGENTS.md` plus skills for Laravel Boost and other agent harnesses).
+
+## Using this template
+
+Read **[GUIDE.md](GUIDE.md)** for the full walkthrough: creating a package, what `configure.php`
+rewrites, the post-setup checklist, releasing, CI and troubleshooting.
+
+Quick start:
+
+```bash
+composer create-project juaniquillo/laravel-package-template acme-widgets
+
+# or, from a clone of this repository:
+php configure.php
+```
+
+Then install and verify:
+
+```bash
+composer install
+composer qa
+```
+<!-- template:end -->
+
 ## Requirements
 
 - PHP `^8.3`
