@@ -122,11 +122,13 @@ unless `--force` is passed.
 | Copyright year and author | `LICENSE.md` |
 | Skill name and directories | `.agents/skills/…`, `resources/boost/skills/…` |
 | Changelog | `CHANGELOG.md` reset to `## [Unreleased]` |
-| Removed files | `configure.php`, `GUIDE.md`, `.github/workflows/template.yml`, README template section, `post-create-project-cmd` hook |
+| Removed files | `configure.php`, `GUIDE.md`, `.github/workflows/template.yml`, `composer.lock`, README template section, `post-create-project-cmd` hook |
 
 ## After configuring
 
-1. `composer install` — regenerates the autoloader for the new namespace.
+1. `composer install` — regenerates the autoloader for the new namespace. The stale
+   `composer.lock` from `composer create-project` is removed during configuration, so this also
+   re-resolves dependencies against the new package metadata.
 2. `composer qa` — must be green before you touch anything else.
 3. Replace the `Usage` block in `README.md` with real documentation.
 4. Add your first `CHANGELOG.md` entry under `[Unreleased]`.

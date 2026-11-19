@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-19
+
+### Fixed
+
+- `configure.php` removes the stale `composer.lock` written by `composer create-project`, so the
+  generated package no longer warns about an out-of-date lock and `composer install` resolves
+  against the new package metadata.
+
 ## [0.1.2] - 2026-11-19
 
 ### Fixed

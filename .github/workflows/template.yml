@@ -35,6 +35,7 @@ jobs:
           set -euo pipefail
           rsync -a --exclude vendor --exclude .git --exclude build --exclude .phpunit.cache ./ /tmp/package/
           cd /tmp/package
+          printf '{}\n' > composer.lock
           php configure.php \
             --vendor=acme \
             --name="Acme Widgets" \
@@ -53,6 +54,7 @@ jobs:
           test ! -f configure.php
           test ! -f GUIDE.md
           test ! -f .github/workflows/template.yml
+          test ! -f composer.lock
           test -f src/AcmeWidgetsServiceProvider.php
           ! grep -q 'post-create-project-cmd' composer.json
           ! grep -R -n -E 'juaniquillo|LaravelPackageTemplate|:author_name|:year|template:start' --exclude-dir=vendor .
