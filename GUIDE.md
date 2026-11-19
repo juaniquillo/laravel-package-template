@@ -28,14 +28,20 @@ composer create-project juaniquillo/laravel-package-template acme-widgets
 cd acme-widgets
 ```
 
-`configure.php` runs interactively at the end of the install.
+The install ends with setup instructions. Configure the scaffold by running
+`configure.php` yourself:
+
+```bash
+php configure.php
+```
 
 ### Scripted / non-interactive
 
-Skip the hook, configure with flags, then regenerate the autoloader:
+The hook only prints setup instructions, so no flags are needed to skip it.
+Configure with flags, then regenerate the autoloader:
 
 ```bash
-composer create-project juaniquillo/laravel-package-template acme-widgets --no-scripts
+composer create-project juaniquillo/laravel-package-template acme-widgets
 cd acme-widgets
 php configure.php \
     --vendor=acme \
@@ -67,13 +73,25 @@ composer qa
 | Prompt | Flag | Default | Notes |
 |---|---|---|---|
 | Vendor slug | `--vendor` | `juaniquillo` | Composer vendor, lowercase |
-| Package slug | `--slug` | `laravel-package-template` | Composer package name |
+| Package slug | `--slug` | derived from the target directory (`acme-widgets`) | Composer package name |
 | Package name | `--name` | derived from the slug (`Acme Widgets`) | Human-readable |
 | Namespace | `--namespace` | derived (`Vendor\Package`) | Backslash-separated |
 | Author name | `--author` | `Victor Sánchez` | Used in `LICENSE.md` and `composer.json` |
 | Author email | `--email` | `juaniquillo@gmail.com` | Used in `composer.json` |
 | Description | `--description` | `Opinionated starting point for a Laravel package.` | Composer description |
 | Copyright year | `--year` | current year | Used in `LICENSE.md` |
+
+Defaults come from the directory you are in: creating `acme-widgets` makes `acme-widgets` the
+default slug, `Acme Widgets` the default name and `Juaniquillo\AcmeWidgets` the default namespace.
+The vendor still defaults to `juaniquillo`, so set `--vendor` or answer that prompt with your own.
+
+With `--no-interaction`, `--vendor` is required; `--slug` is required only when it cannot be
+derived from the directory name (for example when the directory is named `laravel-package-template`)
+or when it would still point at the template. Missing options are reported before anything is
+written.
+
+`configure.php` also refuses to run when every value still identifies the template itself. Pass
+your own vendor and slug, or `--force` when maintaining the template.
 
 Derived values:
 
@@ -83,6 +101,7 @@ Derived values:
 Other options:
 
 - `--no-interaction`, `-n` — never prompt; use flags and defaults
+- `--instructions` — print setup instructions and exit (used by the post-create hook)
 - `--keep-configure` — do not delete `configure.php`
 - `--force`, `-f` — allow configuring the template repository itself (maintenance only)
 - `--help`, `-h`
@@ -172,6 +191,10 @@ verifies the self-configuration guard.
 
 **Pest is slow or fails on Windows** — `bin/pest.php` disables `--parallel` there because parallel
 workers race over the shared Testbench skeleton.
+
+**`configure.php` refuses to run** — the values still identify the template (for example when the
+directory is named `laravel-package-template`). Pass your own `--vendor` and `--slug`, or `--force`
+when maintaining the template. With `--no-interaction`, `--vendor` is always required.
 
 **Configured with the wrong values** — the script is gone, so fix these by hand: `composer.json`
 (name, homepage, keywords, authors, description, autoload, `extra.laravel.providers`), the service

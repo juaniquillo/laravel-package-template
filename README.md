@@ -20,8 +20,7 @@ Quick start:
 
 ```bash
 composer create-project juaniquillo/laravel-package-template acme-widgets
-
-# or, from a clone of this repository:
+cd acme-widgets
 php configure.php
 ```
 

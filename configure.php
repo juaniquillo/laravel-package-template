@@ -67,6 +67,7 @@ const TEXT_EXTENSIONS = [
 const BOOLEAN_OPTIONS = [
     'force',
     'help',
+    'instructions',
     'keep-configure',
     'no-interaction',
 ];
@@ -87,6 +88,12 @@ if (isset($options['help'])) {
     exit(0);
 }
 
+if (isset($options['instructions'])) {
+    printInstructions();
+
+    exit(0);
+}
+
 $interactive = ! isset($options['no-interaction']);
 
 writeln('');
@@ -97,7 +104,9 @@ writeln('');
 $vendorSlug = ask($options, 'vendor', 'Vendor slug', TEMPLATE_VENDOR, $interactive, 'e.g. "acme"');
 validateSlug('Vendor slug', $vendorSlug);
 
-$packageSlug = ask($options, 'slug', 'Package slug', TEMPLATE_PACKAGE_SLUG, $interactive, 'e.g. "acme-widgets"');
+$defaultPackageSlug = defaultPackageSlug($root);
+
+$packageSlug = ask($options, 'slug', 'Package slug', $defaultPackageSlug, $interactive, 'e.g. "acme-widgets"');
 validateSlug('Package slug', $packageSlug);
 
 $packageName = ask($options, 'name', 'Package name', headline($packageSlug), $interactive, 'e.g. "Acme Widgets"');
@@ -118,14 +127,31 @@ $isTemplateItself = $vendorSlug === TEMPLATE_VENDOR
     && $namespace === TEMPLATE_NAMESPACE
     && $packageName === TEMPLATE_PACKAGE_NAME;
 
-if ($isTemplateItself && ! isset($options['force'])) {
-    if (! $interactive) {
-        fail('Refusing to configure the template in place. Pass --force if you really mean it.');
+if (! $interactive) {
+    $missing = [];
+
+    if (! isset($options['vendor'])) {
+        $missing[] = '--vendor';
     }
 
-    if (! confirm('You are about to configure the template repository itself. Continue?')) {
-        fail('Aborted.');
+    if (! isset($options['slug']) && $defaultPackageSlug === TEMPLATE_PACKAGE_SLUG) {
+        $missing[] = '--slug';
     }
+
+    if ($missing !== []) {
+        fail(
+            'Missing required option(s) for --no-interaction: '.implode(', ', $missing).'.',
+            'Example: php configure.php --vendor=acme --slug=acme-widgets --no-interaction',
+        );
+    }
+}
+
+if ($isTemplateItself && ! isset($options['force'])) {
+    fail(
+        'These values still point at the template itself, so there is nothing to rename.',
+        'Answer the prompts with your own vendor and package name, or pass --vendor=acme --slug=acme-widgets.',
+        'Use --force only when maintaining the template repository.',
+    );
 }
 
 $providerClass = studly($packageSlug).'ServiceProvider';
@@ -289,13 +315,6 @@ function ask(array $options, string $key, string $label, string $default, bool $
     $answer = trim(prompt('  '.bold($label).' ['.$default.']: '));
 
     return $answer === '' ? $default : $answer;
-}
-
-function confirm(string $question): bool
-{
-    $answer = trim(prompt('  '.bold($question).' [y/N]: '));
-
-    return in_array(strtolower($answer), ['y', 'yes'], true);
 }
 
 function prompt(string $message): string
@@ -531,6 +550,26 @@ function studly(string $value): string
     return $value;
 }
 
+function defaultPackageSlug(string $root): string
+{
+    $directory = slugify(basename($root));
+
+    if ($directory === '' || $directory === TEMPLATE_PACKAGE_SLUG) {
+        return TEMPLATE_PACKAGE_SLUG;
+    }
+
+    return $directory;
+}
+
+function slugify(string $value): string
+{
+    $value = (string) preg_replace('/(?<=[a-z0-9])(?=[A-Z])/', '-', $value);
+    $value = strtolower($value);
+    $value = (string) preg_replace('/[^a-z0-9]+/', '-', $value);
+
+    return trim($value, '-');
+}
+
 function headline(string $value): string
 {
     return ucwords(str_replace(['-', '_', '.'], ' ', $value));
@@ -596,9 +635,12 @@ function writeln(string $line): void
     echo $line.PHP_EOL;
 }
 
-function fail(string $message): never
+function fail(string ...$lines): never
 {
-    fwrite(STDERR, $message.PHP_EOL);
+    foreach ($lines as $line) {
+        fwrite(STDERR, $line.PHP_EOL);
+    }
+
     fwrite(STDERR, 'Run `php configure.php --help` for usage.'.PHP_EOL);
 
     exit(1);
@@ -609,16 +651,49 @@ function printHelp(): void
     writeln(bold('Usage').': php configure.php [options]');
     writeln('');
     writeln(bold('Options').':');
-    writeln('  --vendor=acme              Composer vendor, e.g. "acme"');
+    writeln('  --vendor=acme              Composer vendor, e.g. "acme" (required with --no-interaction)');
     writeln('  --name="Acme Widgets"      Human-readable package name');
-    writeln('  --slug=acme-widgets        Composer package name');
+    writeln('  --slug=acme-widgets        Composer package name (defaults to the directory name)');
     writeln('  --namespace="Acme\\Widgets" Root PHP namespace');
     writeln('  --author="Jane Doe"        Author name');
     writeln('  --email=jane@example.com   Author email');
     writeln('  --description="..."        Composer description');
     writeln('  --year=2026                Copyright year');
     writeln('  --no-interaction, -n       Never prompt; use flags and defaults');
+    writeln('  --instructions             Print setup instructions (used by post-create-project-cmd)');
     writeln('  --keep-configure           Keep this script after configuring');
     writeln('  --force, -f                Allow configuring the template repository itself');
     writeln('  --help, -h                 Show this help');
+}
+
+function printInstructions(): void
+{
+    $slug = defaultPackageSlug(__DIR__);
+
+    writeln(bold('Scaffold ready.'));
+    writeln('');
+    writeln('Configure it now:');
+    writeln('');
+    writeln('  php configure.php');
+    writeln('');
+
+    if ($slug === TEMPLATE_PACKAGE_SLUG) {
+        writeln('This directory is named like the template, so configure needs an explicit slug:');
+        writeln('');
+        writeln('  php configure.php --vendor=acme --slug=acme-widgets');
+    } else {
+        writeln('Or pass everything up front. The slug defaults to "'.$slug.'", but the vendor does not:');
+        writeln('');
+        writeln('  php configure.php --vendor=acme --slug='.$slug.' --no-interaction');
+    }
+
+    writeln('');
+    writeln('With --no-interaction, --vendor is required (and --slug when it cannot be derived).');
+    writeln('Run `php configure.php --help` for every option.');
+    writeln('');
+    writeln('After configuring, regenerate the autoloader and run the gate:');
+    writeln('');
+    writeln('  composer install');
+    writeln('  composer qa');
+    writeln('');
 }

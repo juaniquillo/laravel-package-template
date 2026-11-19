@@ -52,7 +52,7 @@
             "@prepare"
         ],
         "post-create-project-cmd": [
-            "@php configure.php"
+            "@php configure.php --instructions"
         ],
         "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
         "prepare": "@php vendor/bin/testbench package:discover --ansi",

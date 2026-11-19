@@ -72,14 +72,46 @@ jobs:
           php configure.php --vendor=acme --no-interaction
           grep -q '"email": "juaniquillo@gmail.com"' composer.json
 
+      - name: Assert defaults come from the directory name
+        run: |
+          set -euo pipefail
+          rsync -a --exclude vendor --exclude .git --exclude build --exclude .phpunit.cache ./ /tmp/acme-widgets/
+          cd /tmp/acme-widgets
+          php configure.php --vendor=acme --no-interaction
+          grep -q '"name": "acme/acme-widgets"' composer.json
+          test -f src/AcmeWidgetsServiceProvider.php
+          test ! -f configure.php
+
+      - name: Assert missing options are reported
+        run: |
+          set -euo pipefail
+          rsync -a --exclude vendor --exclude .git --exclude build --exclude .phpunit.cache ./ /tmp/options/
+          cd /tmp/options
+          if php configure.php --no-interaction 2> error.log; then
+            echo "::error::configure.php must require --vendor with --no-interaction"
+            exit 1
+          fi
+          grep -q 'Missing required option' error.log
+          test -f configure.php
+
+      - name: Assert instructions are printed
+        run: |
+          set -euo pipefail
+          rsync -a --exclude vendor --exclude .git --exclude build --exclude .phpunit.cache ./ /tmp/instructions/
+          cd /tmp/instructions
+          php configure.php --instructions | tee output.log
+          grep -q 'php configure.php --vendor=acme' output.log
+          test -f configure.php
+
       - name: Assert the guard
         run: |
           set -euo pipefail
-          rsync -a --exclude vendor --exclude .git --exclude build --exclude .phpunit.cache ./ /tmp/template/
-          cd /tmp/template
-          if php configure.php --no-interaction; then
+          rsync -a --exclude vendor --exclude .git --exclude build --exclude .phpunit.cache ./ /tmp/laravel-package-template/
+          cd /tmp/laravel-package-template
+          if php configure.php --vendor=juaniquillo --slug=laravel-package-template --no-interaction 2> error.log; then
             echo "::error::configure.php must refuse to configure the template repository itself"
             exit 1
           fi
+          grep -q 'template itself' error.log
           test -f configure.php
           test -f GUIDE.md
