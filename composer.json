@@ -1,7 +1,7 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "juaniquillo/laravel-package-template",
-    "description": ":package_description",
+    "description": "Opinionated starting point for a Laravel package.",
     "keywords": [
         "laravel",
         "juaniquillo",
@@ -12,8 +12,8 @@
     "type": "library",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@example.com",
+            "name": "Victor Sánchez",
+            "email": "juaniquillo@gmail.com",
             "role": "Developer"
         }
     ],

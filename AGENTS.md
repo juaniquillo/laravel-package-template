@@ -46,7 +46,7 @@ the `Workbench\` namespace and are never shipped.
 | `src/` | Package source |
 | `tests/` | Pest tests (Arch, Feature, Unit) |
 | `workbench/` | Testbench application |
-| `.agents/skills/`, `resources/boost/skills/` | AI skill describing how to work on this package |
+| `.agents/skills/`, `resources/boost/skills/` | AI skills: `laravel-best-practices` for Laravel code, `laravel-package-template-development` for this repository |
 | `bin/pest.php` | Cross-platform Pest runner |
 
 ## Adding a capability
