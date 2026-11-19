@@ -45,6 +45,7 @@ const SKIP_FILES = [
 const REMOVED_FILES = [
     '.github/workflows/template.yml',
     'GUIDE.md',
+    'composer.lock',
 ];
 
 const TEXT_EXTENSIONS = [
