@@ -1,0 +1,85 @@
+name: Template
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  self-test:
+    name: configure.php self-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo, sqlite, pdo_sqlite, bcmath, intl
+          ini-values: error_reporting=E_ALL
+          tools: composer:v2
+          coverage: none
+
+      - name: Configure a copy
+        run: |
+          set -euo pipefail
+          rsync -a --exclude vendor --exclude .git --exclude build --exclude .phpunit.cache ./ /tmp/package/
+          cd /tmp/package
+          php configure.php \
+            --vendor=acme \
+            --name="Acme Widgets" \
+            --slug=acme-widgets \
+            --namespace="Acme\\Widgets" \
+            --author="Jane Doe" \
+            --email=jane@example.com \
+            --description="Widgets for Acme." \
+            --year=2026 \
+            --no-interaction
+
+      - name: Assert the skeleton is gone
+        run: |
+          set -euo pipefail
+          cd /tmp/package
+          test ! -f configure.php
+          test ! -f GUIDE.md
+          test ! -f .github/workflows/template.yml
+          test -f src/AcmeWidgetsServiceProvider.php
+          ! grep -q 'post-create-project-cmd' composer.json
+          ! grep -R -n -E 'juaniquillo|LaravelPackageTemplate|:author_name|:year|template:start' --exclude-dir=vendor .
+
+      - name: Install and run the gate
+        run: |
+          set -euo pipefail
+          cd /tmp/package
+          composer install --prefer-dist --no-interaction --no-progress
+          composer qa
+
+      - name: Assert a vendor-only rename keeps the author email
+        run: |
+          set -euo pipefail
+          rsync -a --exclude vendor --exclude .git --exclude build --exclude .phpunit.cache ./ /tmp/vendor-only/
+          cd /tmp/vendor-only
+          php configure.php --vendor=acme --no-interaction
+          grep -q '"email": "juaniquillo@gmail.com"' composer.json
+
+      - name: Assert the guard
+        run: |
+          set -euo pipefail
+          rsync -a --exclude vendor --exclude .git --exclude build --exclude .phpunit.cache ./ /tmp/template/
+          cd /tmp/template
+          if php configure.php --no-interaction; then
+            echo "::error::configure.php must refuse to configure the template repository itself"
+            exit 1
+          fi
+          test -f configure.php
+          test -f GUIDE.md

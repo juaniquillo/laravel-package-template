@@ -18,7 +18,7 @@ const TEMPLATE_PACKAGE_NAME = 'Laravel Package Template';
 const TEMPLATE_PACKAGE_SLUG = 'laravel-package-template';
 const TEMPLATE_AUTHOR = 'Victor Sánchez';
 const TEMPLATE_AUTHOR_EMAIL = 'juaniquillo@gmail.com';
-const TEMPLATE_DESCRIPTION = 'An opinionated Laravel package.';
+const TEMPLATE_DESCRIPTION = 'Opinionated starting point for a Laravel package.';
 
 const SKILL_DIRECTORIES = [
     '.agents/skills',
@@ -38,6 +38,12 @@ const SKIP_DIRECTORIES = [
 
 const SKIP_FILES = [
     'configure.php',
+    'GUIDE.md',
+    'template.yml',
+];
+
+const REMOVED_FILES = [
+    '.github/workflows/template.yml',
     'GUIDE.md',
 ];
 
@@ -125,14 +131,15 @@ if ($isTemplateItself && ! isset($options['force'])) {
 $providerClass = studly($packageSlug).'ServiceProvider';
 
 $replacements = [
+    'juaniquillo@gmail.com' => $authorEmail,
+    'Victor Sánchez' => $authorName,
+    'Opinionated starting point for a Laravel package.' => $description,
     TEMPLATE_VENDOR => $vendorSlug,
     TEMPLATE_NAMESPACE => $namespace,
     TEMPLATE_SERVICE_PROVIDER => $providerClass,
     TEMPLATE_PACKAGE_NAME => $packageName,
     TEMPLATE_PACKAGE_SLUG => $packageSlug,
     ':author_name' => $authorName,
-    'author@example.com' => $authorEmail,
-    ':package_description' => $description,
     ':year' => $year,
 ];
 
@@ -182,10 +189,14 @@ foreach (SKILL_DIRECTORIES as $directory) {
     }
 }
 
-if (is_file($root.'/GUIDE.md')) {
-    unlink($root.'/GUIDE.md');
+foreach (REMOVED_FILES as $file) {
+    $path = $root.'/'.$file;
 
-    writeln('  '.yellow('removed').' GUIDE.md');
+    if (is_file($path)) {
+        unlink($path);
+
+        writeln('  '.yellow('removed').' '.$file);
+    }
 }
 
 writeln('');
@@ -311,16 +322,14 @@ function replaceInFile(string $path, array $replacements): bool
         return false;
     }
 
-    $updated = $contents;
-    $isJson = str_ends_with($path, '.json');
+    $replacements = str_ends_with($path, '.json')
+        ? array_combine(
+            array_map('jsonEscape', array_keys($replacements)),
+            array_map('jsonEscape', array_values($replacements)),
+        )
+        : $replacements;
 
-    foreach ($replacements as $search => $replace) {
-        $updated = str_replace(
-            $isJson ? jsonEscape($search) : $search,
-            $isJson ? jsonEscape($replace) : $replace,
-            $updated,
-        );
-    }
+    $updated = strtr($contents, $replacements);
 
     if ($updated === $contents) {
         return false;

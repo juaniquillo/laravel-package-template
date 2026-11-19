@@ -72,7 +72,7 @@ composer qa
 | Namespace | `--namespace` | derived (`Vendor\Package`) | Backslash-separated |
 | Author name | `--author` | `Victor Sánchez` | Used in `LICENSE.md` and `composer.json` |
 | Author email | `--email` | `juaniquillo@gmail.com` | Used in `composer.json` |
-| Description | `--description` | `An opinionated Laravel package.` | Composer description |
+| Description | `--description` | `Opinionated starting point for a Laravel package.` | Composer description |
 | Copyright year | `--year` | current year | Used in `LICENSE.md` |
 
 Derived values:
@@ -103,7 +103,7 @@ unless `--force` is passed.
 | Copyright year and author | `LICENSE.md` |
 | Skill name and directories | `.agents/skills/…`, `resources/boost/skills/…` |
 | Changelog | `CHANGELOG.md` reset to `## [Unreleased]` |
-| Removed files | `configure.php`, `GUIDE.md`, README template section, `post-create-project-cmd` hook |
+| Removed files | `configure.php`, `GUIDE.md`, `.github/workflows/template.yml`, README template section, `post-create-project-cmd` hook |
 
 ## After configuring
 
@@ -153,6 +153,11 @@ the platform allows it and Pest 4 on PHP 8.3; both majors are inside the constra
 the place that proves the PHP 8.3 combination.
 
 Run `composer qa` locally before opening the pull request — it is the same gate.
+
+A second workflow, `Template`, is template-only and is deleted when you configure: it configures a
+throwaway copy, asserts the script, guide and workflow are gone with no placeholders left, runs
+`composer qa` in the copy, checks that a vendor-only rename keeps the author email intact, and
+verifies the self-configuration guard.
 
 ## Troubleshooting
 
