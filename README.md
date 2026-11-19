@@ -86,7 +86,7 @@ php artisan boost:add-skill https://github.com/juaniquillo/laravel-package-templ
 | `src/` | Package source (`Juaniquillo\LaravelPackageTemplate`) |
 | `tests/` | Pest feature, unit and architecture tests |
 | `workbench/` | Disposable Laravel app powered by Orchestra Testbench |
-| `.agents/skills/`, `resources/boost/skills/` | Skill describing how to work on this package |
+| `.agents/skills/`, `resources/boost/skills/` | AI skills for Laravel code and for working on this package |
 
 ## Changelog
 

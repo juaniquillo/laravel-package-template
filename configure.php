@@ -340,7 +340,7 @@ function replaceInFile(string $path, array $replacements): bool
 
 function sortImports(string $path): bool
 {
-    if (! str_ends_with($path, '.php')) {
+    if (! str_ends_with($path, '.php') || str_ends_with($path, '.blade.php')) {
         return false;
     }
 
